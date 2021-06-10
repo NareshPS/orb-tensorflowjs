@@ -164,6 +164,47 @@ Non-trainable params: 0
 __________________________________________________________________________________________________
 </pre>
 
+### One-to-One mapping of an input element to the layer arg
+*split()* pseudo layer splits the input into 2 components. *map()* pseudo layer maps each split to a dense layer.
+```js
+const {serial, split, map } = require('orb-tensorflowjs')
+
+const input = tf.input({shape: [4, 4]})
+const output = serial(
+  split({factor: 2}),
+  map(
+    tf.layers.dense({units: 10}),
+    tf.layers.dense({units: 10}),
+  ),
+  tf.layers.concatenate(),
+  tf.layers.dense({units: 10, activation: 'softmax'})
+).apply(input)
+const m = tf.model({inputs: input, outputs: output})
+m.summary()
+```
+<pre>
+__________________________________________________________________________________________________
+ Layer (type)                    Output shape         Param #     Receives inputs                  
+==================================================================================================
+ input1 (InputLayer)             [null,4,4]           0                                            
+__________________________________________________________________________________________________
+ split_Split1 (Split)            [[null,2,4],[null,2, 0           input1[0][0]                     
+__________________________________________________________________________________________________
+ dense_Dense1 (Dense)            [null,2,10]          50          split_Split1[0][0]               
+__________________________________________________________________________________________________
+ dense_Dense2 (Dense)            [null,2,10]          50          split_Split1[0][1]               
+__________________________________________________________________________________________________
+ concatenate_Concatenate1 (Conca [null,2,20]          0           dense_Dense1[0][0]               
+                                                                  dense_Dense2[0][0]               
+__________________________________________________________________________________________________
+ dense_Dense3 (Dense)            [null,2,10]          210         concatenate_Concatenate1[0][0]   
+==================================================================================================
+Total params: 310
+Trainable params: 310
+Non-trainable params: 0
+__________________________________________________________________________________________________
+</pre>
+
 ### Expand Dimensions
 *expandDims* expands a dimension.
 
@@ -192,6 +233,142 @@ Total params: 50
 Trainable params: 50
 Non-trainable params: 0
 _________________________________________________________________
+</pre>
+
+### Combining Input and Layer APIs | Example 1
+In the below example, the *split()* pseudo layers splits the input into a 2x2 grid. *flat()* Input API arranges transforms it into an array of grids. Each element is mapped to the dense layer using *mapTo()*. The output of dense is forwarded to the downstream layers.
+```js
+const {serial, parallel, split, mapTo, expandDims, input: orbinput } = require('orb-tensorflowjs')
+
+const input = tf.input({shape: [4, 4]})
+const dl = tf.layers.dense({units: 4})
+const sl = split({factor: 2, axis: 2})
+const output = serial(
+  split({factor: 2, axis: 1}),
+  mapTo(sl),
+  orbinput.flat(),
+  mapTo(dl),
+  tf.layers.concatenate(),
+  tf.layers.flatten(),
+  tf.layers.dense({units: 10, activation: 'softmax'})
+).apply(input)
+const m = tf.model({inputs: input, outputs: output})
+m.summary()
+```
+<pre>
+__________________________________________________________________________________________________
+ Layer (type)                    Output shape         Param #     Receives inputs                  
+==================================================================================================
+ input1 (InputLayer)             [null,4,4]           0                                            
+__________________________________________________________________________________________________
+ split_Split2 (Split)            [[null,2,4],[null,2, 0           input1[0][0]                     
+__________________________________________________________________________________________________
+ split_Split1 (Split)            [[null,2,2],[null,2, 0           split_Split2[0][0]               
+                                                                  split_Split2[0][1]               
+__________________________________________________________________________________________________
+ dense_Dense1 (Dense)            [null,2,4]           12          split_Split1[0][0]               
+                                                                  split_Split1[0][1]               
+                                                                  split_Split1[1][0]               
+                                                                  split_Split1[1][1]               
+__________________________________________________________________________________________________
+ concatenate_Concatenate1 (Conca [null,2,16]          0           dense_Dense1[0][0]               
+                                                                  dense_Dense1[1][0]               
+                                                                  dense_Dense1[2][0]               
+                                                                  dense_Dense1[3][0]               
+__________________________________________________________________________________________________
+ flatten_Flatten1 (Flatten)      [null,32]            0           concatenate_Concatenate1[0][0]   
+__________________________________________________________________________________________________
+ dense_Dense2 (Dense)            [null,10]            330         flatten_Flatten1[0][0]           
+==================================================================================================
+Total params: 342
+Trainable params: 342
+Non-trainable params: 0
+__________________________________________________________________________________________________
+</pre>
+
+### Combining Input and Layer APIs | Example 2
+Here, the *split()* input API splits the input array. *map()* pseudo layer applies 1:1 mapping of inputs to the arg layers.
+
+```js
+const {serial, map, input: orbinput } = require('orb-tensorflowjs')
+
+const input1 = tf.input({shape: [4, 4]})
+const input2 = tf.input({shape: [4, 4]})
+const output = serial(
+  orbinput.split(),
+  map(
+    tf.layers.dense({units: 10}),
+    tf.layers.dense({units: 10}),
+  ),
+  tf.layers.concatenate(),
+  tf.layers.flatten(),
+  tf.layers.dense({units: 10, activation: 'softmax'})
+).apply([input1, input2])
+const m = tf.model({inputs: [input1, input2], outputs: output})
+m.summary()
+```
+<pre>
+__________________________________________________________________________________________________
+ Layer (type)                    Output shape         Param #     Receives inputs                  
+==================================================================================================
+ input1 (InputLayer)             [null,4,4]           0                                            
+__________________________________________________________________________________________________
+ input2 (InputLayer)             [null,4,4]           0                                            
+__________________________________________________________________________________________________
+ dense_Dense1 (Dense)            [null,4,10]          50          input1[0][0]                     
+__________________________________________________________________________________________________
+ dense_Dense2 (Dense)            [null,4,10]          50          input2[0][0]                     
+__________________________________________________________________________________________________
+ concatenate_Concatenate1 (Conca [null,4,20]          0           dense_Dense1[0][0]               
+                                                                  dense_Dense2[0][0]               
+__________________________________________________________________________________________________
+ flatten_Flatten1 (Flatten)      [null,80]            0           concatenate_Concatenate1[0][0]   
+__________________________________________________________________________________________________
+ dense_Dense3 (Dense)            [null,10]            810         flatten_Flatten1[0][0]           
+==================================================================================================
+Total params: 910
+Trainable params: 910
+Non-trainable params: 0
+__________________________________________________________________________________________________
+</pre>
+
+### Combining Input and Layer APIs | Example 2
+*repeat()* input API repeats the input and forwards the result. *map()* pseudo layer performs one-to-one mapping between input and layer args.
+```js
+const {serial, map, input: orbinput } = require('orb-tensorflowjs')
+
+const input = tf.input({shape: [4, 4]})
+const output = serial(
+  orbinput.repeat(),
+  map(
+    tf.layers.dense({units: 10}),
+    tf.layers.dense({units: 10}),
+  ),
+  tf.layers.concatenate(),
+  tf.layers.dense({units: 10, activation: 'softmax'})
+).apply(input)
+const m = tf.model({inputs: input, outputs: output})
+m.summary()
+```
+<pre>
+__________________________________________________________________________________________________
+ Layer (type)                    Output shape         Param #     Receives inputs                  
+==================================================================================================
+ input1 (InputLayer)             [null,4,4]           0                                            
+__________________________________________________________________________________________________
+ dense_Dense1 (Dense)            [null,4,10]          50          input1[0][0]                     
+__________________________________________________________________________________________________
+ dense_Dense2 (Dense)            [null,4,10]          50          input1[0][0]                     
+__________________________________________________________________________________________________
+ concatenate_Concatenate1 (Conca [null,4,20]          0           dense_Dense1[0][0]               
+                                                                  dense_Dense2[0][0]               
+__________________________________________________________________________________________________
+ dense_Dense3 (Dense)            [null,4,10]          210         concatenate_Concatenate1[0][0]   
+==================================================================================================
+Total params: 310
+Trainable params: 310
+Non-trainable params: 0
+__________________________________________________________________________________________________
 </pre>
 # Input APIs
 These APIs transform the input arrangement. They apply to an input or an array of inputs. They **do not** modify tensors.

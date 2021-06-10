@@ -1,5 +1,5 @@
 const test = require('ava')
-const { serial, parallel, mapTo, split, expandDims } = require('./layer.js')
+const { serial, parallel, map, mapTo, split, expandDims } = require('./layer.js')
 const tf = require('./tfinit.js')
 
 ///////////////////////////// serial [start] ///////////////////////////// 
@@ -111,6 +111,47 @@ test('mapTo-multiple-inputs', t => {
   t.deepEqual(second.shape.slice(1), [2, 2])
 })
 ///////////////////////////// mapTo [end] ///////////////////////////////
+
+///////////////////////////// map [start] ///////////////////////////////
+test('map-no-args', t => {
+  const output = map().apply()
+
+  t.deepEqual(output, [])
+})
+
+test('map-no-args-empty-inputs', t => {
+  const output = map().apply([])
+
+  t.deepEqual(output, [])
+})
+
+test('map-with-single-input', t => {
+  const input = tf.input({shape: [4, 1]})
+  const ml = map(tf.layers.reshape({targetShape: [2, 2]}))
+  const output = ml.apply([input])
+  const [first, ...rest] = output
+
+  t.deepEqual(first.shape.slice(1), [2, 2])
+  t.deepEqual(rest, [])
+})
+
+test('map-with-multipe-inputs', t => {
+  const inputs = [
+    tf.input({shape: [4, 1]}),
+    tf.input({shape: [1, 6]}),
+  ]
+  const ml = map(
+    tf.layers.reshape({targetShape: [2, 2]}),
+    tf.layers.reshape({targetShape: [2, 3]}),
+  )
+  const output = ml.apply(inputs)
+  const [first, second, ...rest] = output
+
+  t.deepEqual(first.shape.slice(1), [2, 2])
+  t.deepEqual(second.shape.slice(1), [2, 3])
+  t.deepEqual(rest, [])
+})
+///////////////////////////// map [end] ///////////////////////////////
 
 ///////////////////////////// split [start] ///////////////////////////////
 test('split-no-args', t => {

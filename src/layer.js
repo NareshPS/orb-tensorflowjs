@@ -1,5 +1,5 @@
 const tf = require('./tfinit.js')
-const { range } = require('orb-array')
+const { range, zip } = require('orb-array')
 
 const serial = (...ls) => ({
   apply: x => ls.reduce((rx, l) => l.apply(rx), x)
@@ -11,6 +11,14 @@ const parallel = (...ls) => ({
 
 const mapTo = (l) => ({
   apply: inputs => l? inputs.map((input) => l.apply(input)): inputs
+})
+
+const map = (...ls) => ({
+  apply: x => {
+    const inputs = x instanceof Array? x: x? [x]: []
+    
+    return zip(inputs, ls).map(([input, l]) => l.apply(input))
+  }
 })
 
 /**
@@ -82,6 +90,7 @@ module.exports = {
   serial,
   parallel,
   split,
+  map,
   mapTo,
   expandDims,
 }

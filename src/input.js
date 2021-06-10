@@ -5,7 +5,7 @@ const functions = require('orb-functions')
 const tap = (fn) => ({
   apply: x => {
     const fx = object.is.array(x)? x: [x]
-    fn? fn(x): fx.forEach((fxi) => console.info(fxi.shape))
+    fn? fn(x): console.info(fx.map((fxi) => fxi.shape))
 
     return x
   }
