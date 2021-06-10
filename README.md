@@ -114,6 +114,75 @@ Trainable params: 170
 Non-trainable params: 0
 __________________________________________________________________________________________________
 </pre>
+
+### Feed the same input to multiple layers
+```js
+const {serial, split, mapTo } = require('orb-tensorflowjs')
+
+const input = tf.input({shape: [4, 4]})
+const ml = tf.layers.dense({units: 5})
+const output = serial(
+  split(),
+  mapTo(ml),
+  tf.layers.concatenate(),
+  tf.layers.dense({units: 10, activation: 'softmax'})
+).apply(input)
+const m = tf.model({inputs: input, outputs: output})
+m.summary()
+```
+<pre>
+__________________________________________________________________________________________________
+ Layer (type)                    Output shape         Param #     Receives inputs                  
+==================================================================================================
+ input1 (InputLayer)             [null,4,4]           0                                            
+__________________________________________________________________________________________________
+ split_Split1 (Split)            [[null,1,4],[null,1, 0           input1[0][0]                     
+__________________________________________________________________________________________________
+ dense_Dense1 (Dense)            [null,1,5]           25          split_Split1[0][0]               
+                                                                  split_Split1[0][1]               
+                                                                  split_Split1[0][2]               
+                                                                  split_Split1[0][3]               
+__________________________________________________________________________________________________
+ concatenate_Concatenate1 (Conca [null,1,20]          0           dense_Dense1[0][0]               
+                                                                  dense_Dense1[1][0]               
+                                                                  dense_Dense1[2][0]               
+                                                                  dense_Dense1[3][0]               
+__________________________________________________________________________________________________
+ dense_Dense2 (Dense)            [null,1,10]          210         concatenate_Concatenate1[0][0]   
+==================================================================================================
+Total params: 235
+Trainable params: 235
+Non-trainable params: 0
+__________________________________________________________________________________________________
+</pre>
+
+### Expand Dimensions
+```js
+const {serial, expandDims } = require('orb-tensorflowjs')
+
+const input = tf.input({shape: [4, 4]})
+const output = serial(
+  expandDims(),
+  tf.layers.dense({units: 10, activation: 'softmax'})
+).apply(input)
+const m = tf.model({inputs: input, outputs: output})
+m.summary()
+```
+<pre>
+_________________________________________________________________
+ Layer (type)                 Output shape              Param #   
+=================================================================
+ input1 (InputLayer)          [null,4,4]                0         
+_________________________________________________________________
+ expand_dims_ExpandDims1 (Exp [null,1,4,4]              0         
+_________________________________________________________________
+ dense_Dense1 (Dense)         [null,1,4,10]             50        
+=================================================================
+Total params: 50
+Trainable params: 50
+Non-trainable params: 0
+_________________________________________________________________
+</pre>
 # Input APIs
 These APIs transform the input arrangement. They apply to an input or an array of inputs. They **do not** modify tensors.
 
