@@ -20,6 +20,8 @@ npm install orb-tensorflowjs
 
 # Model Design
 ### A Sequential model with an input and a softmax layer.
+*serial* pseudo layer constructs a sequential flow of its arg layers. The input is applied with a call to *apply()* method. The output of an arg layer is fed as input to the next arg layer. The output of the last arg layer is returned.
+
 ```js
 const {serial } = require('orb-tensorflowjs')
 
@@ -45,6 +47,8 @@ _________________________________________________________________
 </pre>
 
 ### Feed an input to multiple layers in parallel
+*parallel* pseudo layer feeds its input to each arg layer in parallel. The input is applied with a call to *apply()* method. It outputs an array containing the output from each arg layer.
+
 ```js
 const {serial, parallel } = require('orb-tensorflowjs')
 
@@ -82,6 +86,8 @@ ________________________________________________________________________________
 </pre>
 
 ### Split Example
+*split* pseudo layer splits the input. It supports configurations to tweak the splits.
+
 ```js
 const {serial, split } = require('orb-tensorflowjs')
 
@@ -115,7 +121,9 @@ Non-trainable params: 0
 __________________________________________________________________________________________________
 </pre>
 
-### Feed the same input to multiple layers
+### Map elements in an input array individually to a layer
+*mapTo* feeds the individual elements of an input array to the same layer.
+
 ```js
 const {serial, split, mapTo } = require('orb-tensorflowjs')
 
@@ -157,6 +165,8 @@ ________________________________________________________________________________
 </pre>
 
 ### Expand Dimensions
+*expandDims* expands a dimension.
+
 ```js
 const {serial, expandDims } = require('orb-tensorflowjs')
 
