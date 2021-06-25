@@ -35,7 +35,9 @@ const output = serial(tf.layers.dense({units: 10, activation: 'softmax'}))
 const m = tf.model({inputs: input, outputs: output})
 m.summary()
 ```
-<pre>
+
+<sub>
+ <pre>
 _________________________________________________________________
  Layer (type)                 Output shape              Param #   
 =================================================================
@@ -47,8 +49,8 @@ Total params: 50
 Trainable params: 50
 Non-trainable params: 0
 _________________________________________________________________
-</pre>
-
+ </pre>
+</sub>
 ### Feed an input to multiple layers in parallel
 *parallel* pseudo layer feeds its input to each arg layer in parallel. The input is applied with a call to *apply()* method. It outputs an array containing the output from each arg layer.
 
@@ -67,7 +69,8 @@ const output = serial(
 const m = tf.model({inputs: input, outputs: output})
 m.summary()
 ```
-<pre>
+<sub>
+ <pre>
 __________________________________________________________________________________________________
  Layer (type)                    Output shape         Param #     Receives inputs                  
 ==================================================================================================
@@ -86,7 +89,8 @@ Total params: 310
 Trainable params: 310
 Non-trainable params: 0
 __________________________________________________________________________________________________
-</pre>
+ </pre>
+</sub>
 
 ### Split Example
 *split* pseudo layer splits the input. It supports configurations to tweak the splits.
@@ -103,7 +107,8 @@ const output = serial(
 const m = tf.model({inputs: input, outputs: output})
 m.summary()
 ```
-<pre>
+<sub>
+ <pre>
 __________________________________________________________________________________________________
  Layer (type)                    Output shape         Param #     Receives inputs                  
 ==================================================================================================
@@ -122,7 +127,8 @@ Total params: 170
 Trainable params: 170
 Non-trainable params: 0
 __________________________________________________________________________________________________
-</pre>
+ </pre>
+</sub>
 
 ### Map elements in an input array individually to a layer
 *mapTo* feeds the individual elements of an input array to the same layer.
@@ -141,7 +147,8 @@ const output = serial(
 const m = tf.model({inputs: input, outputs: output})
 m.summary()
 ```
-<pre>
+<sub>
+ <pre>
 __________________________________________________________________________________________________
  Layer (type)                    Output shape         Param #     Receives inputs                  
 ==================================================================================================
@@ -165,7 +172,8 @@ Total params: 235
 Trainable params: 235
 Non-trainable params: 0
 __________________________________________________________________________________________________
-</pre>
+ </pre>
+</sub>
 
 ### One-to-One mapping of an input element to the layer arg
 *split()* pseudo layer splits the input into 2 components. *map()* pseudo layer maps each split to a dense layer.
@@ -185,7 +193,8 @@ const output = serial(
 const m = tf.model({inputs: input, outputs: output})
 m.summary()
 ```
-<pre>
+<sub>
+ <pre>
 __________________________________________________________________________________________________
  Layer (type)                    Output shape         Param #     Receives inputs                  
 ==================================================================================================
@@ -206,7 +215,8 @@ Total params: 310
 Trainable params: 310
 Non-trainable params: 0
 __________________________________________________________________________________________________
-</pre>
+ </pre>
+</sub>
 
 ### Expand Dimensions
 *expandDims* expands a dimension.
@@ -222,7 +232,8 @@ const output = serial(
 const m = tf.model({inputs: input, outputs: output})
 m.summary()
 ```
-<pre>
+<sub>
+ <pre>
 _________________________________________________________________
  Layer (type)                 Output shape              Param #   
 =================================================================
@@ -236,7 +247,8 @@ Total params: 50
 Trainable params: 50
 Non-trainable params: 0
 _________________________________________________________________
-</pre>
+ </pre>
+</sub>
 
 ### Combining Input and Layer APIs | Example 1
 In the below example, the *split()* pseudo layers splits the input into a 2x2 grid. *flat()* Input API arranges transforms it into an array of grids. Each element is mapped to the dense layer using *mapTo()*. The output of dense is forwarded to the downstream layers.
@@ -258,7 +270,8 @@ const output = serial(
 const m = tf.model({inputs: input, outputs: output})
 m.summary()
 ```
-<pre>
+<sub>
+ <pre>
 __________________________________________________________________________________________________
  Layer (type)                    Output shape         Param #     Receives inputs                  
 ==================================================================================================
@@ -287,7 +300,8 @@ Total params: 342
 Trainable params: 342
 Non-trainable params: 0
 __________________________________________________________________________________________________
-</pre>
+ </pre>
+</sub>
 
 ### Combining Input and Layer APIs | Example 2
 Here, the *split()* input API splits the input array. *map()* pseudo layer applies 1:1 mapping of inputs to the arg layers.
@@ -310,7 +324,8 @@ const output = serial(
 const m = tf.model({inputs: [input1, input2], outputs: output})
 m.summary()
 ```
-<pre>
+<sub>
+ <pre>
 __________________________________________________________________________________________________
  Layer (type)                    Output shape         Param #     Receives inputs                  
 ==================================================================================================
@@ -333,7 +348,8 @@ Total params: 910
 Trainable params: 910
 Non-trainable params: 0
 __________________________________________________________________________________________________
-</pre>
+ </pre>
+</sub>
 
 ### Combining Input and Layer APIs | Example 2
 *repeat()* input API repeats the input and forwards the result. *map()* pseudo layer performs one-to-one mapping between input and layer args.
@@ -353,7 +369,8 @@ const output = serial(
 const m = tf.model({inputs: input, outputs: output})
 m.summary()
 ```
-<pre>
+<sub>
+ <pre>
 __________________________________________________________________________________________________
  Layer (type)                    Output shape         Param #     Receives inputs                  
 ==================================================================================================
@@ -372,7 +389,9 @@ Total params: 310
 Trainable params: 310
 Non-trainable params: 0
 __________________________________________________________________________________________________
-</pre>
+ </pre>
+</sub>
+
 # Input APIs
 An input API operates on input arrays. They **do not** modify tensors. We explain them below with a few examples.
 
