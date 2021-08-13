@@ -13,7 +13,7 @@ These APIs work together to simplfy the model design. We will go through a few e
 Browser Installation. The module is exported as *orbtfjs* global variable.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/orb-tensorflowjs@1.0.0/dist/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/orb-tensorflowjs@latest/dist/index.js"></script>
 ```
 
 Node Installation
